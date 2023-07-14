@@ -1,8 +1,10 @@
 class MimetypeMismatchException(Exception):
     """Expected mimetype does not match the given mimetype."""
 
-    pass
+
+class MimetypeNotDetectedException(Exception):
+    """Mimetype could not have been detected."""
 
 
-class MaterialAlreadyLoaded(Exception):
+class MaterialAlreadyLoadedException(Exception):
     """InternalLectureMaterial is already available."""
