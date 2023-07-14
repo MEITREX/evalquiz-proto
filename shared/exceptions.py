@@ -8,3 +8,19 @@ class MimetypeNotDetectedException(Exception):
 
 class MaterialAlreadyLoadedException(Exception):
     """InternalLectureMaterial is already available."""
+
+
+class EmptyUploadException(ValueError):
+    """The uploaded data is empty."""
+
+
+class FirstDataChunkNotLectureMaterialException(ValueError):
+    """The first chunk of a lecture material upload stream should be of type LectureMaterial."""
+
+
+class DataChunkNotBytesException(ValueError):
+    """All chunks of a lecture material upload stream except the first one should be bytes."""
+
+
+class FileOverwriteNotPermittedException(Exception):
+    """A file is already present at the given location and is not permitted to be overwritten."""

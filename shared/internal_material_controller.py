@@ -1,8 +1,9 @@
 from collections import defaultdict
 import os
 from pathlib import Path
+from evalquiz_proto.shared.exceptions import FileOverwriteNotPermittedException
 from shared.generated import LectureMaterial
-from typing import ByteString
+from typing import AsyncIterator, ByteString
 from .internal_lecture_material import InternalLectureMaterial
 from blake3 import blake3
 
@@ -62,16 +63,40 @@ class InternalMaterialController:
         Args:
             local_path: The system path to the location where the file is created.
             lecture_material: Information about the lecture material.
-            binary: The file itself.
+            binary: Binary data of the lecture material file itself.
             overwrite: Boolean to describe if an existing file can be overwritten.
         """
-        with open(local_path, "r") as local_file:
-            file_content = local_file.read()
-            hash = blake3(file_content).hexdigest()
-        if hash not in self.internal_lecture_materials:
-            with open(local_path, "w") as local_file:
-                local_file.write(binary)
-            self.load_material(local_path, lecture_material)
+        if os.path.exists(local_path) and not overwrite:
+            raise FileOverwriteNotPermittedException()
+        with open(local_path, "wb") as local_file:
+            local_file.write(binary)
+        self.load_material(local_path, lecture_material)
+
+    async def add_material_async(
+        self,
+        local_path: Path,
+        lecture_material: LectureMaterial,
+        binary_iterator: AsyncIterator[ByteString],
+        overwrite: bool = True,
+    ) -> InternalLectureMaterial:
+        """A new material is created asynchronously at the specified location.
+        System operations are carried out async to allow large file sizes and reduce the memory footprint.
+
+        Args:
+            local_path: The system path to the location where the file is created.
+            lecture_material: Information about the lecture material.
+            binary_iterator: An asynchronous iterator with binary data of the file itself.
+            overwrite: Boolean to describe if an existing file can be overwritten.
+        """
+        if os.path.exists(local_path) and not overwrite:
+            raise FileOverwriteNotPermittedException()
+        while True:
+            with open(local_path, "wb") as local_file:
+                try:
+                    data = await binary_iterator.__anext__()
+                    local_file.write(data)
+                except StopAsyncIteration:
+                    break
 
     def delete_material(self, hash: str) -> None:
         """Deletes the internal representation of the file in memory and the file itself from the filesystem.
