@@ -1,8 +1,9 @@
+from collections import defaultdict
 import os
 from pathlib import Path
-from . import PageFilter, LectureMaterial
-from typing import ByteString, Optional
-from . import InternalLectureMaterial
+from shared.generated import LectureMaterial
+from typing import ByteString
+from .internal_lecture_material import InternalLectureMaterial
 from blake3 import blake3
 
 
@@ -11,7 +12,10 @@ class InternalMaterialController:
     containing relevant lecture materials.
     """
 
-    internal_lecture_materials: dict[InternalLectureMaterial]
+    def __init__(self):
+        self.internal_lecture_materials: defaultdict[
+            InternalLectureMaterial
+        ] = defaultdict()
 
     def get_material_from_hash(self, hash: str) -> InternalLectureMaterial:
         """A material that exists as an internal representation can be retrieved using a hash.
@@ -34,7 +38,9 @@ class InternalMaterialController:
             local_path, lecture_material
         )
         if internal_lecture_material.hash not in self.internal_lecture_materials:
-            self.internal_lecture_materials[internal_lecture_material.hash]
+            self.internal_lecture_materials[
+                internal_lecture_material.hash
+            ] = internal_lecture_material
 
     def unload_material(self, hash: str) -> None:
         """Removes the internal representation of a lecture material. Does not delete the file.
@@ -42,7 +48,7 @@ class InternalMaterialController:
         Args:
             hash: A blake3 hash generated using the material.
         """
-        self.internal_lecture_materials[hash]
+        del self.internal_lecture_materials[hash]
 
     def add_material(
         self,
@@ -61,7 +67,7 @@ class InternalMaterialController:
         """
         with open(local_path, "r") as local_file:
             file_content = local_file.read()
-            hash = blake3(file_content)
+            hash = blake3(file_content).hexdigest()
         if hash not in self.internal_lecture_materials:
             with open(local_path, "w") as local_file:
                 local_file.write(binary)
