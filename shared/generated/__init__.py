@@ -97,7 +97,7 @@ class MaterialUploadData(betterproto.Message):
         2, optional=True, group="material_upload_data"
     )
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def check_oneof(cls, values):
         return cls._validate_field_groups(values)
 
@@ -118,7 +118,7 @@ class InternalConfig(betterproto.Message):
         5, optional=True, group="_evaluation_settings"
     )
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def check_oneof(cls, values):
         return cls._validate_field_groups(values)
 
@@ -141,7 +141,7 @@ class Capability(betterproto.Message):
 class GenerationSettings(betterproto.Message):
     mode: Optional["Mode"] = betterproto.message_field(1, optional=True, group="_mode")
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def check_oneof(cls, values):
         return cls._validate_field_groups(values)
 
@@ -158,7 +158,7 @@ class Mode(betterproto.Message):
         3, optional=True, group="mode"
     )
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def check_oneof(cls, values):
         return cls._validate_field_groups(values)
 
@@ -199,7 +199,7 @@ class Result(betterproto.Message):
         2, optional=True, group="result"
     )
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def check_oneof(cls, values):
         return cls._validate_field_groups(values)
 
@@ -230,7 +230,7 @@ class Metric(betterproto.Message):
     mode: Optional["Mode"] = betterproto.message_field(2, optional=True, group="_mode")
     evaluation_type: "EvaluationType" = betterproto.message_field(3)
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def check_oneof(cls, values):
         return cls._validate_field_groups(values)
 
@@ -241,7 +241,7 @@ class EvaluationType(betterproto.Message):
         "LanguageModelEvaluation"
     ] = betterproto.message_field(1, optional=True, group="evaluation_type")
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def check_oneof(cls, values):
         return cls._validate_field_groups(values)
 
@@ -262,7 +262,7 @@ class ResultType(betterproto.Message):
         2, optional=True, group="result_type"
     )
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def check_oneof(cls, values):
         return cls._validate_field_groups(values)
 
@@ -295,7 +295,7 @@ class LectureMaterial(betterproto.Message):
         5, optional=True, group="_page_filter"
     )
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def check_oneof(cls, values):
         return cls._validate_field_groups(values)
 
@@ -313,7 +313,7 @@ class PipelineStatus(betterproto.Message):
     )
     batch_status: List["BatchStatus"] = betterproto.message_field(2)
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def check_oneof(cls, values):
         return cls._validate_field_groups(values)
 
@@ -325,7 +325,7 @@ class BatchStatus(betterproto.Message):
     )
     pipeline_module: "PipelineModule" = betterproto.enum_field(2)
 
-    @root_validator()
+    @root_validator(skip_on_failure=True)
     def check_oneof(cls, values):
         return cls._validate_field_groups(values)
 
@@ -523,6 +523,7 @@ class MaterialServerBase(ServiceBase):
         }
 
 
+"""
 MaterialUploadData.__pydantic_model__.update_forward_refs()  # type: ignore
 InternalConfig.__pydantic_model__.update_forward_refs()  # type: ignore
 CourseSettings.__pydantic_model__.update_forward_refs()  # type: ignore
@@ -541,3 +542,4 @@ Batch.__pydantic_model__.update_forward_refs()  # type: ignore
 LectureMaterial.__pydantic_model__.update_forward_refs()  # type: ignore
 PipelineStatus.__pydantic_model__.update_forward_refs()  # type: ignore
 BatchStatus.__pydantic_model__.update_forward_refs()  # type: ignore
+"""

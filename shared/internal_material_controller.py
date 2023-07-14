@@ -1,6 +1,9 @@
-from generated import PageFilter, LectureMaterial
+import os
+from pathlib import Path
+from . import PageFilter, LectureMaterial
 from typing import ByteString, Optional
-from shared_classes.internal_lecture_material import InternalLectureMaterial
+from . import InternalLectureMaterial
+from blake3 import blake3
 
 
 class InternalMaterialController:
@@ -18,7 +21,9 @@ class InternalMaterialController:
         """
         return self.internal_lecture_materials[hash]
 
-    def load_material(self, local_path: str, lecture_material: LectureMaterial) -> None:
+    def load_material(
+        self, local_path: Path, lecture_material: LectureMaterial
+    ) -> None:
         """Adds a material to the internal pool of lecture materials.
 
         Args:
@@ -41,7 +46,7 @@ class InternalMaterialController:
 
     def add_material(
         self,
-        local_path: str,
+        local_path: Path,
         lecture_material: LectureMaterial,
         binary: ByteString,
         overwrite: bool = True,
@@ -58,20 +63,19 @@ class InternalMaterialController:
             file_content = local_file.read()
             hash = blake3(file_content)
         if hash not in self.internal_lecture_materials:
-            with open(local_path, 'w') as local_file:
+            with open(local_path, "w") as local_file:
                 local_file.write(binary)
-            internal_lecture_material = InternalLectureMaterial(
-                local_path, lecture_material
-            )
+            self.load_material(local_path, lecture_material)
 
-
-
-    def delete_material(self, local_path: str) -> None:
+    def delete_material(self, hash: str) -> None:
         """Deletes the internal representation of the file in memory and the file itself from the filesystem.
 
         Args:
             local_path: The system path to the file.
         """
+        internal_lecture_material = self.internal_lecture_materials[hash]
+        self.unload_material(hash)
+        os.remove(internal_lecture_material.path)
 
     def get_material_hashes(self) -> list[str]:
         """Retrieves all hashes of the internally referenced materials.

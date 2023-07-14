@@ -1,10 +1,9 @@
-from generated import LectureMaterial, PageFilter
+from dataclasses import dataclass
+from shared.generated import LectureMaterial, PageFilter
 from blake3 import blake3
 from typing import Optional, TypeVar, Generic
-import magic
-from shared_classes.exceptions import MimetypeMismatchException
-
-mime = magic.Magic(mime=True)
+import filetype
+from shared.exceptions import MimetypeMismatchException
 
 
 @dataclass(init=False)
@@ -42,5 +41,6 @@ class InternalLectureMaterial(LectureMaterial):
         Raises:
             MimetypeMismatchException
         """
-        if mime.from_file(self.local_path) != mimetype:
+        type = filetype.guess_mime(self.local_path)
+        if type != mimetype or type is None:
             raise MimetypeMismatchException()

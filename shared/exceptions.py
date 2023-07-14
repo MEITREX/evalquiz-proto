@@ -3,5 +3,6 @@ class MimetypeMismatchException(Exception):
 
     pass
 
+
 class MaterialAlreadyLoaded(Exception):
     """InternalLectureMaterial is already available."""
