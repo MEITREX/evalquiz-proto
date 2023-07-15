@@ -1,17 +1,17 @@
 import pytest
 from blake3 import blake3
 from pathlib import Path
-from shared.generated import LectureMaterial
-from shared.internal_material_controller import InternalMaterialController
+from evalquiz_proto.shared.generated import LectureMaterial
+from evalquiz_proto.shared.internal_material_controller import InternalMaterialController
 
 
 @pytest.fixture(scope="session")
-def im_controller():
+def im_controller() -> InternalMaterialController:
     im_controller = InternalMaterialController()
     return im_controller
 
 
-def test_load_material(im_controller):
+def test_load_material(im_controller: InternalMaterialController) -> None:
     material_path = Path("tests/shared/example_materials/example.txt")
     material_metadata = LectureMaterial(
         reference="Example textfile", file_type="text/plain"
@@ -24,7 +24,7 @@ def test_load_material(im_controller):
     assert lecture_material.reference == "Example textfile"
 
 
-def test_unload_material(im_controller):
+def test_unload_material(im_controller: InternalMaterialController) -> None:
     material_path = Path("tests/shared/example_materials/example.txt")
     material_metadata = LectureMaterial(
         reference="Example textfile", file_type="text/plain"
@@ -36,7 +36,7 @@ def test_unload_material(im_controller):
     assert hash not in im_controller.internal_lecture_materials.keys()
 
 
-def test_get_material_hashes(im_controller):
+def test_get_material_hashes(im_controller: InternalMaterialController) -> None:
     material_path = Path("tests/shared/example_materials/example.txt")
     material_metadata = LectureMaterial(
         reference="Example textfile", file_type="text/plain"

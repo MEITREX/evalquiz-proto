@@ -1,11 +1,12 @@
 from collections import defaultdict
 import os
 from pathlib import Path
-from evalquiz_proto.shared.exceptions import FileOverwriteNotPermittedException
-from shared.generated import LectureMaterial
+from evalquiz_proto.shared.exceptions import DataChunkNotBytesException, FileOverwriteNotPermittedException
+from evalquiz_proto.shared.generated import LectureMaterial, MaterialUploadData
 from typing import AsyncIterator, ByteString
-from .internal_lecture_material import InternalLectureMaterial
+from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 from blake3 import blake3
+import betterproto
 
 
 class InternalMaterialController:
@@ -13,9 +14,9 @@ class InternalMaterialController:
     containing relevant lecture materials.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.internal_lecture_materials: defaultdict[
-            InternalLectureMaterial
+            str, InternalLectureMaterial
         ] = defaultdict()
 
     def get_material_from_hash(self, hash: str) -> InternalLectureMaterial:
@@ -57,7 +58,7 @@ class InternalMaterialController:
         lecture_material: LectureMaterial,
         binary: ByteString,
         overwrite: bool = True,
-    ) -> InternalLectureMaterial:
+    ) -> None:
         """A new material is created at the specified location.
 
         Args:
@@ -76,9 +77,9 @@ class InternalMaterialController:
         self,
         local_path: Path,
         lecture_material: LectureMaterial,
-        binary_iterator: AsyncIterator[ByteString],
+        binary_iterator: AsyncIterator[MaterialUploadData],
         overwrite: bool = True,
-    ) -> InternalLectureMaterial:
+    ) -> None:
         """A new material is created asynchronously at the specified location.
         System operations are carried out async to allow large file sizes and reduce the memory footprint.
 
@@ -93,8 +94,15 @@ class InternalMaterialController:
         while True:
             with open(local_path, "wb") as local_file:
                 try:
-                    data = await binary_iterator.__anext__()
-                    local_file.write(data)
+                    material_upload_data = await binary_iterator.__anext__()
+                    (
+                        type,
+                        data
+                    ) = betterproto.which_one_of(material_upload_data, "material_upload_data")
+                    if data is not None and type == "lecture_material":
+                        local_file.write(data)
+                    else:
+                        raise DataChunkNotBytesException()
                 except StopAsyncIteration:
                     break
 
@@ -114,4 +122,4 @@ class InternalMaterialController:
         Returns:
             A set of strings
         """
-        return self.internal_lecture_materials.keys()
+        return list(self.internal_lecture_materials.keys())

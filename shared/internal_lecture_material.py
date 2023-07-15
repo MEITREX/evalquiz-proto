@@ -1,16 +1,16 @@
 from dataclasses import dataclass
 import mimetypes
 from pathlib import Path
-from shared.generated import LectureMaterial
+from evalquiz_proto.shared.generated import LectureMaterial
 from blake3 import blake3
-from shared.exceptions import MimetypeMismatchException, MimetypeNotDetectedException
+from evalquiz_proto.shared.exceptions import MimetypeMismatchException, MimetypeNotDetectedException
 
 
 @dataclass(init=False)
 class InternalLectureMaterial(LectureMaterial):
     """A lecture material with an additional local path pointing to the file."""
 
-    local_path: str
+    local_path: Path = Path("")
 
     def __init__(self, local_path: Path, lecture_material: LectureMaterial):
         self.local_path = local_path

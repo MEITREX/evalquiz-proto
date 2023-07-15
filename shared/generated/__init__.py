@@ -72,7 +72,7 @@ class Empty(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class String(betterproto.Message):
-    value: List[str] = betterproto.string_field(1)
+    value: str = betterproto.string_field(1)
 
 
 @dataclass(eq=False, repr=False)
