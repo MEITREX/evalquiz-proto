@@ -3,7 +3,10 @@ import mimetypes
 from pathlib import Path
 from evalquiz_proto.shared.generated import LectureMaterial
 from blake3 import blake3
-from evalquiz_proto.shared.exceptions import MimetypeMismatchException, MimetypeNotDetectedException
+from evalquiz_proto.shared.exceptions import (
+    MimetypeMismatchException,
+    MimetypeNotDetectedException,
+)
 
 
 @dataclass(init=False)

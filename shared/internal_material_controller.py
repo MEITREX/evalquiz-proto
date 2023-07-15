@@ -1,7 +1,10 @@
 from collections import defaultdict
 import os
 from pathlib import Path
-from evalquiz_proto.shared.exceptions import DataChunkNotBytesException, FileOverwriteNotPermittedException
+from evalquiz_proto.shared.exceptions import (
+    DataChunkNotBytesException,
+    FileOverwriteNotPermittedException,
+)
 from evalquiz_proto.shared.generated import LectureMaterial, MaterialUploadData
 from typing import AsyncIterator, ByteString
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
@@ -94,10 +97,9 @@ class InternalMaterialController:
             with open(local_path, "wb") as local_file:
                 try:
                     material_upload_data = await binary_iterator.__anext__()
-                    (
-                        type,
-                        data
-                    ) = betterproto.which_one_of(material_upload_data, "material_upload_data")
+                    (type, data) = betterproto.which_one_of(
+                        material_upload_data, "material_upload_data"
+                    )
                     if data is not None and type == "lecture_material":
                         local_file.write(data)
                     else:

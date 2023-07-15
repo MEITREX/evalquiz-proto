@@ -2,7 +2,9 @@ import pytest
 from blake3 import blake3
 from pathlib import Path
 from evalquiz_proto.shared.generated import LectureMaterial
-from evalquiz_proto.shared.internal_material_controller import InternalMaterialController
+from evalquiz_proto.shared.internal_material_controller import (
+    InternalMaterialController,
+)
 
 
 @pytest.fixture(scope="session")
