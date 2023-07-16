@@ -93,14 +93,15 @@ class InternalMaterialController:
         """
         if os.path.exists(local_path) and not overwrite:
             raise FileOverwriteNotPermittedException()
-        while True:
-            with open(local_path, "wb") as local_file:
+        with open(local_path, "ab") as local_file:
+            local_file.truncate(0)
+            while True:
                 try:
                     material_upload_data = await binary_iterator.__anext__()
-                    (type, data) = betterproto.which_one_of(
+                    (datatype, data) = betterproto.which_one_of(
                         material_upload_data, "material_upload_data"
                     )
-                    if data is not None and type == "lecture_material":
+                    if data is not None and datatype == "data":
                         local_file.write(data)
                     else:
                         raise DataChunkNotBytesException()
