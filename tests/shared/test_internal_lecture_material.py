@@ -9,15 +9,15 @@ def material() -> InternalLectureMaterial:
     material_metadata = LectureMaterial(
         reference="Example textfile", file_type="text/plain"
     )
-    material = InternalLectureMaterial(
-        Path("tests/shared/example_materials/example.txt"), material_metadata
-    )
+    path = Path(__file__).parent / "example_materials/example.txt"
+    material = InternalLectureMaterial(path, material_metadata)
     return material
 
 
 def test_modification_and_verification(material: InternalLectureMaterial) -> None:
     hash = material.hash
-    material.local_path = Path("tests/shared/example_materials/modified_example.txt")
+    path = Path(__file__).parent / "example_materials/modified_example.txt"
+    material.local_path = path
     assert material.verify_hash() == False
     material.update_hash()
     assert material.hash != hash

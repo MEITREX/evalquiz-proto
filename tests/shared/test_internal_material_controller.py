@@ -14,7 +14,7 @@ def im_controller() -> InternalMaterialController:
 
 
 def test_load_material(im_controller: InternalMaterialController) -> None:
-    material_path = Path("tests/shared/example_materials/example.txt")
+    material_path = Path(__file__).parent / "example_materials/example.txt"
     material_metadata = LectureMaterial(
         reference="Example textfile", file_type="text/plain"
     )
@@ -27,7 +27,7 @@ def test_load_material(im_controller: InternalMaterialController) -> None:
 
 
 def test_unload_material(im_controller: InternalMaterialController) -> None:
-    material_path = Path("tests/shared/example_materials/example.txt")
+    material_path = Path(__file__).parent / "example_materials/example.txt"
     material_metadata = LectureMaterial(
         reference="Example textfile", file_type="text/plain"
     )
@@ -39,12 +39,12 @@ def test_unload_material(im_controller: InternalMaterialController) -> None:
 
 
 def test_get_material_hashes(im_controller: InternalMaterialController) -> None:
-    material_path = Path("tests/shared/example_materials/example.txt")
+    material_path = Path(__file__).parent / "example_materials/example.txt"
     material_metadata = LectureMaterial(
         reference="Example textfile", file_type="text/plain"
     )
     im_controller.load_material(material_path, material_metadata)
-    material_path = Path("tests/shared/example_materials/modified_example.txt")
+    material_path = Path(__file__).parent / "example_materials/modified_example.txt"
     material_metadata = LectureMaterial(
         reference="Modified example textfile", file_type="text/plain"
     )
