@@ -28,3 +28,7 @@ class FileOverwriteNotPermittedException(Exception):
 
 class FileHasDifferentHashException(Exception):
     """The file referenced in an internal lecture material has a different hash value than the attribute of the internal lecture material."""
+
+
+class NoMimetypeMappingException(Exception):
+    """The system could not map any file extension to the given mimetype, the mimetype could be invalid."""
