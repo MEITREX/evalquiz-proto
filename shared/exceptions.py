@@ -24,3 +24,7 @@ class DataChunkNotBytesException(ValueError):
 
 class FileOverwriteNotPermittedException(Exception):
     """A file is already present at the given location and is not permitted to be overwritten."""
+
+
+class FileHasDifferentHashException(Exception):
+    """The file referenced in an internal lecture material has a different hash value than the attribute of the internal lecture material."""

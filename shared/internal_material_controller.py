@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from evalquiz_proto.shared.exceptions import (
     DataChunkNotBytesException,
+    FileHasDifferentHashException,
     FileOverwriteNotPermittedException,
 )
 from evalquiz_proto.shared.generated import LectureMaterial, MaterialUploadData
@@ -37,14 +38,20 @@ class InternalMaterialController:
         Args:
             local_path: The system path to the file.
             lecture_material: Information about the lecture material.
+
+        Raises:
+            FileHasDifferentHashException
         """
         internal_lecture_material = InternalLectureMaterial(
             local_path, lecture_material
         )
-        if internal_lecture_material.hash not in self.internal_lecture_materials:
-            self.internal_lecture_materials[
-                internal_lecture_material.hash
-            ] = internal_lecture_material
+        if internal_lecture_material.verify_hash():
+            if internal_lecture_material.hash not in self.internal_lecture_materials:
+                self.internal_lecture_materials[
+                    internal_lecture_material.hash
+                ] = internal_lecture_material
+        else:
+            raise FileHasDifferentHashException()
 
     def unload_material(self, hash: str) -> None:
         """Removes the internal representation of a lecture material. Does not delete the file.
@@ -90,6 +97,10 @@ class InternalMaterialController:
             lecture_material: Information about the lecture material.
             binary_iterator: An asynchronous iterator with binary data of the file itself.
             overwrite: Boolean to describe if an existing file can be overwritten.
+
+        Raises:
+            FileOverwriteNotPermittedException
+            FileHasDifferentHashException
         """
         if os.path.exists(local_path) and not overwrite:
             raise FileOverwriteNotPermittedException()
@@ -107,6 +118,11 @@ class InternalMaterialController:
                         raise DataChunkNotBytesException()
                 except StopAsyncIteration:
                     break
+        try:
+            self.load_material(local_path, lecture_material)
+        except FileHasDifferentHashException:
+            os.remove(local_path)
+            raise FileHasDifferentHashException()
 
     def delete_material(self, hash: str) -> None:
         """Deletes the internal representation of the file in memory and the file itself from the filesystem.
