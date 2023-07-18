@@ -6,6 +6,11 @@ from evalquiz_proto.shared.generated import LectureMaterial
 
 @pytest.fixture(scope="session")
 def material() -> InternalLectureMaterial:
+    """Pytest fixture of InternalLectureMaterial.
+
+    Returns:
+        InternalLectureMaterial
+    """
     material_metadata = LectureMaterial(
         reference="Example textfile", file_type="text/plain"
     )
@@ -15,6 +20,11 @@ def material() -> InternalLectureMaterial:
 
 
 def test_modification_and_verification(material: InternalLectureMaterial) -> None:
+    """Tests recognition of file modification using InternalLectureMaterial.verify_hash().
+
+    Args:
+        material (InternalLectureMaterial): Pytest fixture of InternalLectureMaterial.
+    """
     hash = material.hash
     path = Path(__file__).parent / "example_materials/modified_example.txt"
     material.local_path = path
@@ -24,5 +34,11 @@ def test_modification_and_verification(material: InternalLectureMaterial) -> Non
 
 
 def test_evaluate_mimetype(material: InternalLectureMaterial) -> None:
+    """Tests failure of mimetype evaluation using an invalid mimetype.
+
+    Args:
+        material (InternalLectureMaterial): Pytest fixture of InternalLectureMaterial.y
+    """
     with pytest.raises(Exception):
-        material._evaluate_mimetype("Not a valid mimetype")
+        material.file_type = "Not a valid mimetype"
+        material._evaluate_mimetype()

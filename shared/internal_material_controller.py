@@ -42,10 +42,12 @@ class InternalMaterialController:
         Raises:
             FileHasDifferentHashException
         """
+        received_hash = lecture_material.hash
         internal_lecture_material = InternalLectureMaterial(
             local_path, lecture_material
         )
-        if internal_lecture_material.verify_hash():
+        print(received_hash + ", " + internal_lecture_material.hash)
+        if internal_lecture_material.verify_hash(received_hash):
             if internal_lecture_material.hash not in self.internal_lecture_materials:
                 self.internal_lecture_materials[
                     internal_lecture_material.hash
