@@ -32,3 +32,7 @@ class FileHasDifferentHashException(Exception):
 
 class NoMimetypeMappingException(Exception):
     """The system could not map any file extension to the given mimetype, the mimetype could be invalid."""
+
+
+class LectureMaterialCastRequiredException(Exception):
+    """InternalLectureMaterial object should be casted to LectureMaterial to ensure correctness. This can be done with the InternalLectureMaterial method cast_to_lecture_material()."""

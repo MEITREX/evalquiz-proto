@@ -3,6 +3,8 @@ import mimetypes
 import os
 from pathlib import Path
 from typing import Optional
+
+import jsonpickle
 from evalquiz_proto.shared.generated import LectureMaterial
 from blake3 import blake3
 from evalquiz_proto.shared.exceptions import (
@@ -46,9 +48,9 @@ class InternalLectureMaterial(LectureMaterial):
             self.hash = hash
             self._update_mimetype()
             if rename_file:
-                self._rename_file(hash)
+                self._rename_file_to_hash(hash)
 
-    def _rename_file(self, hash: str) -> None:
+    def _rename_file_to_hash(self, hash: str) -> None:
         """Renames a file to the newly calculated hash.
 
         Args:
@@ -73,6 +75,17 @@ class InternalLectureMaterial(LectureMaterial):
         with open(self.local_path, "r") as local_file:
             file_content = local_file.read()
             return other_hash == blake3(file_content.encode("utf-8")).hexdigest()
+
+    def cast_to_lecture_material(self) -> LectureMaterial:
+        """Casts self object to object of superclass: LectureMaterial.
+        This method is required, as Python does not feature object type casting.
+
+        Returns:
+            LectureMaterial: Self object casted into LectureMaterial.
+        """
+        return LectureMaterial(
+            self.reference, self.url, self.hash, self.file_type, self.page_filter
+        )
 
     def _evaluate_mimetype(self) -> None:
         """Evaluates if given mimetype matches the mimetype of file at local_path.

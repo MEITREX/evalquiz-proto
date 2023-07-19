@@ -344,15 +344,16 @@ class MaterialServerStub(betterproto.ServiceStub):
         timeout: Optional[float] = None,
         deadline: Optional["Deadline"] = None,
         metadata: Optional["MetadataLike"] = None
-    ) -> "LectureMaterial":
-        return await self._unary_unary(
+    ) -> AsyncIterator["MaterialUploadData"]:
+        async for response in self._unary_stream(
             "/MaterialServer/GetMaterial",
             string,
-            LectureMaterial,
+            MaterialUploadData,
             timeout=timeout,
             deadline=deadline,
             metadata=metadata,
-        )
+        ):
+            yield response
 
 
 class PipelineServerBase(ServiceBase):
@@ -395,8 +396,11 @@ class MaterialServerBase(ServiceBase):
     async def get_material_hashes(self, empty: "Empty") -> "ListOfStrings":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_material(self, string: "String") -> "LectureMaterial":
+    async def get_material(
+        self, string: "String"
+    ) -> AsyncIterator["MaterialUploadData"]:
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+        yield MaterialUploadData()
 
     async def __rpc_upload_material(
         self, stream: "grpclib.server.Stream[MaterialUploadData, Empty]"
@@ -420,11 +424,14 @@ class MaterialServerBase(ServiceBase):
         await stream.send_message(response)
 
     async def __rpc_get_material(
-        self, stream: "grpclib.server.Stream[String, LectureMaterial]"
+        self, stream: "grpclib.server.Stream[String, MaterialUploadData]"
     ) -> None:
         request = await stream.recv_message()
-        response = await self.get_material(request)
-        await stream.send_message(response)
+        await self._call_rpc_handler_server_stream(
+            self.get_material,
+            stream,
+            request,
+        )
 
     def __mapping__(self) -> Dict[str, grpclib.const.Handler]:
         return {
@@ -448,8 +455,8 @@ class MaterialServerBase(ServiceBase):
             ),
             "/MaterialServer/GetMaterial": grpclib.const.Handler(
                 self.__rpc_get_material,
-                grpclib.const.Cardinality.UNARY_UNARY,
+                grpclib.const.Cardinality.UNARY_STREAM,
                 String,
-                LectureMaterial,
+                MaterialUploadData,
             ),
         }

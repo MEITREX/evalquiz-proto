@@ -1,13 +1,15 @@
 from collections import defaultdict
+import jsonpickle
 import os
 from pathlib import Path
 from evalquiz_proto.shared.exceptions import (
     DataChunkNotBytesException,
     FileHasDifferentHashException,
     FileOverwriteNotPermittedException,
+    LectureMaterialCastRequiredException,
 )
 from evalquiz_proto.shared.generated import LectureMaterial, MaterialUploadData
-from typing import AsyncIterator, ByteString
+from typing import AsyncIterator, ByteString, Optional
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 import betterproto
 
@@ -17,18 +19,73 @@ class InternalMaterialController:
     containing relevant lecture materials.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, config_path: Optional[Path] = None) -> None:
+        self.config_path: Optional[Path] = None
         self.internal_lecture_materials: defaultdict[
             str, InternalLectureMaterial
         ] = defaultdict()
+        if config_path is not None:
+            self.config_path = config_path
+            self.deserialize_from_config()
 
-    def get_material_from_hash(self, hash: str) -> InternalLectureMaterial:
+    def deserialize_from_config(self) -> None:
+        """Serializes InternalMaterialController from config.
+        Loads all InternalLectureMaterials referenced in the config.
+        This method overwrites all existing state of InternalMaterialController.
+        """
+        if self.config_path is None:
+            raise ValueError(
+                "config_path is not set. Must be set for serialization or deserialization."
+            )
+        with open(self.config_path, "r") as local_file:
+            config = local_file.read()
+        internal_lecture_materials: defaultdict[
+            str, InternalLectureMaterial
+        ] = jsonpickle.decode(config)
+        for internal_lecture_material in internal_lecture_materials.values():
+            lecture_material = internal_lecture_material.cast_to_lecture_material()
+            print(type(lecture_material))
+            self.load_material(internal_lecture_material.local_path, lecture_material)
+
+    def serialize_to_config(self) -> None:
+        """Deserializes InternalMaterialController to config.
+        Saves all InternalLectureMaterials referenced in the config.
+        Contents of an existing config referenced by config_path are overwritten.
+        """
+        if self.config_path is None:
+            raise ValueError(
+                "config_path is not set. Must be set for serialization or deserialization."
+            )
+        serialized_internal_lecture_materials = jsonpickle.encode(
+            self.internal_lecture_materials
+        )
+        with open(self.config_path, "w") as local_file:
+            local_file.write(serialized_internal_lecture_materials)
+
+    async def get_material_from_hash_async(
+        self, hash: str, content_partition_size: int = 5 * 10**8
+    ) -> AsyncIterator[MaterialUploadData]:
         """A material that exists as an internal representation can be retrieved using a hash.
+        Arbitrary large files can be read, as only a partition of the file is read at a time.
 
         Args:
-            hash: A blake3 hash generated using the material.
+            hash (str): Hash generated using the material
+            content_partition_size (int, optional): Amount of bytes that are read from the file at one time. Defaults to 5*10**8.
+
+        Returns:
+            AsyncIterator[MaterialUploadData]: Yields MaterialUploadData, this can be metadata or binary data of the file itself.
         """
-        return self.internal_lecture_materials[hash]
+        content_partition_size
+        internal_lecture_material = self.internal_lecture_materials[hash]
+        material_upload_data = MaterialUploadData(
+            lecture_material=internal_lecture_material.cast_to_lecture_material()
+        )
+        yield material_upload_data
+        with open(internal_lecture_material.local_path, "rb") as local_file:
+            while content_partition := local_file.read(content_partition_size):
+                print(content_partition)
+                material_upload_data = MaterialUploadData(data=content_partition)
+                yield material_upload_data
 
     def load_material(
         self, local_path: Path, lecture_material: LectureMaterial
@@ -42,11 +99,12 @@ class InternalMaterialController:
         Raises:
             FileHasDifferentHashException
         """
+        if type(lecture_material) is not LectureMaterial:
+            raise LectureMaterialCastRequiredException()
         received_hash = lecture_material.hash
         internal_lecture_material = InternalLectureMaterial(
             local_path, lecture_material
         )
-        print(received_hash + ", " + internal_lecture_material.hash)
         if internal_lecture_material.verify_hash(received_hash):
             if internal_lecture_material.hash not in self.internal_lecture_materials:
                 self.internal_lecture_materials[
@@ -59,7 +117,7 @@ class InternalMaterialController:
         """Removes the internal representation of a lecture material. Does not delete the file.
 
         Args:
-            hash: A blake3 hash generated using the material.
+            hash: Hash generated using the material.
         """
         del self.internal_lecture_materials[hash]
 
@@ -97,7 +155,7 @@ class InternalMaterialController:
         Args:
             local_path: The system path to the location where the file is created.
             lecture_material: Information about the lecture material.
-            binary_iterator: An asynchronous iterator with binary data of the file itself.
+            binary_iterator: Yields MaterialUploadData, this can be metadata or binary data of the file itself.
             overwrite: Boolean to describe if an existing file can be overwritten.
 
         Raises:

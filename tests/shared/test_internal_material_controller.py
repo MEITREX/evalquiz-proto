@@ -103,3 +103,25 @@ def test_get_material_hashes(
         file_content = local_file.read()
     hash = blake3(file_content.encode("utf-8")).hexdigest()
     assert hash in material_hashes
+
+
+def test_serialization_and_deserialization_with_config(
+    im_controller: InternalMaterialController,
+    paths_and_lecture_materials: List[Tuple[Path, LectureMaterial]],
+) -> None:
+    """Tests saving InternalMaterialController state to file by serialization and deserialization.
+
+    Args:
+        im_controller (InternalMaterialController): Pytest fixture of InternalMaterialController
+        paths_and_lecture_materials (List[Tuple[Path, LectureMaterial]]): Pytest fixture of parameter configurations.
+    """
+    config_path = Path(__file__).parent / "test_config.json"
+    im_controller.load_material(*paths_and_lecture_materials[0])
+    im_controller.load_material(*paths_and_lecture_materials[1])
+    im_controller.config_path = config_path
+    im_controller.serialize_to_config()
+    new_im_controller = InternalMaterialController(config_path)
+    assert new_im_controller.get_material_hashes() == [
+        path_and_lecture_material[1].hash
+        for path_and_lecture_material in paths_and_lecture_materials
+    ]
