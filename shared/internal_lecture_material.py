@@ -3,8 +3,6 @@ import mimetypes
 import os
 from pathlib import Path
 from typing import Optional
-
-import jsonpickle
 from evalquiz_proto.shared.generated import LectureMaterial
 from blake3 import blake3
 from evalquiz_proto.shared.exceptions import (
