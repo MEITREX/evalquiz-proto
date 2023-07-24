@@ -20,6 +20,11 @@ class InternalMaterialController:
     """
 
     def __init__(self, config_path: Optional[Path] = None) -> None:
+        """Constructor of InternalMaterialController.
+
+        Args:
+            config_path (Optional[Path], optional): Specifies where backups of the InternalMaterialController state are saved. Defaults to None.
+        """
         self.config_path: Optional[Path] = None
         self.internal_lecture_materials: defaultdict[
             str, InternalLectureMaterial

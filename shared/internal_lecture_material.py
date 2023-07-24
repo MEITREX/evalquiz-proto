@@ -18,7 +18,7 @@ class InternalLectureMaterial(LectureMaterial):
     local_path: Path = Path("")
 
     def __init__(self, local_path: Path, lecture_material: LectureMaterial):
-        """Constructor for InternalLectureMaterial.
+        """Constructor of InternalLectureMaterial.
 
         Args:
             local_path (Path): The local path that the binary is located at.
