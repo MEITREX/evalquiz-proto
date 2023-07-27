@@ -197,7 +197,8 @@ class InternalMaterialController:
         """
         internal_lecture_material = self.internal_lecture_materials[hash]
         self.unload_material(hash)
-        os.remove(internal_lecture_material.local_path)
+        if hash not in self.internal_lecture_materials.keys():
+            os.remove(internal_lecture_material.local_path)
 
     def get_material_hashes(self) -> list[str]:
         """Retrieves all hashes of the internally referenced materials.
