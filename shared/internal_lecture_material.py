@@ -1,8 +1,11 @@
+from __future__ import annotations
 from dataclasses import dataclass
 import mimetypes
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
+
+import jsonpickle
 from evalquiz_proto.shared.generated import LectureMaterial
 from blake3 import blake3
 from evalquiz_proto.shared.exceptions import (
@@ -103,3 +106,20 @@ class InternalLectureMaterial(LectureMaterial):
         (type, _) = mimetypes.guess_type(self.local_path)
         if type is not None:
             self.file_type = type
+
+    def to_mongodb_document(self) -> dict[str, Any]:
+        """Encodes self to a representation that can be inserted by pymongo.
+
+        Returns:
+            dict[str, Any]: Dictionary containing hash and serialized self.
+        """
+        return {"_id": self.hash, "internal_lecture_material": jsonpickle.encode(self)}
+
+    @classmethod
+    def from_mongodb_document(cls, document: dict[str, Any]) -> InternalLectureMaterial:
+        """Constructor of self from pymongo representation.
+
+        Args:
+            document (dict[str, Any]): Dictionary containing hash and serialized self.
+        """
+        return jsonpickle.decode(document["internal_lecture_material"])

@@ -3,6 +3,7 @@ import pytest
 from blake3 import blake3
 from pathlib import Path
 from evalquiz_proto.shared.generated import LectureMaterial
+from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 from evalquiz_proto.shared.internal_material_controller import (
     InternalMaterialController,
 )
@@ -11,11 +12,16 @@ from evalquiz_proto.shared.internal_material_controller import (
 @pytest.fixture(scope="session")
 def im_controller() -> InternalMaterialController:
     """Pytest fixture of InternalMaterialController.
+    Initializes InternalMaterialController with custom test database.
+    Test database is emptied before tests are executed.
 
     Returns:
         InternalMaterialController
     """
-    im_controller = InternalMaterialController()
+    im_controller = InternalMaterialController(
+        mongodb_database="lecture_material_test_db"
+    )
+    im_controller.mongodb_client.drop_database("lecture_material_test_db")
     return im_controller
 
 
@@ -58,11 +64,18 @@ def test_load_material(
     """
     (material_path, material_metadata) = paths_and_lecture_materials[0]
     im_controller.load_material(material_path, material_metadata)
-    assert len(im_controller.internal_lecture_materials) != 0
-    lecture_material = list(im_controller.internal_lecture_materials.values())[0]
-    hash = lecture_material.hash
-    assert hash in im_controller.internal_lecture_materials.keys()
-    assert lecture_material.reference == "Example textfile"
+    pymongo_documents = im_controller.internal_lecture_materials.find(
+        {"_id": material_metadata.hash}
+    )
+    pymongo_document_list = list(pymongo_documents)
+    assert len(pymongo_document_list) == 1
+    lecture_material = InternalLectureMaterial.from_mongodb_document(
+        pymongo_document_list[0]
+    )
+    assert material_metadata.hash in [
+        document["_id"] for document in pymongo_document_list
+    ]
+    assert material_metadata.reference == lecture_material.reference
 
 
 def test_unload_material(
@@ -77,10 +90,21 @@ def test_unload_material(
     """
     (material_path, material_metadata) = paths_and_lecture_materials[0]
     im_controller.load_material(material_path, material_metadata)
-    lecture_material = list(im_controller.internal_lecture_materials.values())[0]
-    hash = lecture_material.hash
-    im_controller.unload_material(hash)
-    assert hash not in im_controller.internal_lecture_materials.keys()
+    pymongo_documents = im_controller.internal_lecture_materials.find(
+        {"_id": material_metadata.hash}
+    )
+    pymongo_document_list = list(pymongo_documents)
+    assert len(pymongo_document_list) == 1
+    assert material_metadata.hash in [
+        document["_id"] for document in pymongo_document_list
+    ]
+    im_controller.unload_material(material_metadata.hash)
+    assert (
+        im_controller.internal_lecture_materials.find_one(
+            {"_id": material_metadata.hash}
+        )
+        is None
+    )
 
 
 def test_get_material_hashes(
@@ -103,25 +127,3 @@ def test_get_material_hashes(
         file_content = local_file.read()
     hash = blake3(file_content.encode("utf-8")).hexdigest()
     assert hash in material_hashes
-
-
-def test_serialization_and_deserialization_with_config(
-    im_controller: InternalMaterialController,
-    paths_and_lecture_materials: List[Tuple[Path, LectureMaterial]],
-) -> None:
-    """Tests saving InternalMaterialController state to file by serialization and deserialization.
-
-    Args:
-        im_controller (InternalMaterialController): Pytest fixture of InternalMaterialController
-        paths_and_lecture_materials (List[Tuple[Path, LectureMaterial]]): Pytest fixture of parameter configurations.
-    """
-    config_path = Path(__file__).parent / "test_config.json"
-    im_controller.load_material(*paths_and_lecture_materials[0])
-    im_controller.load_material(*paths_and_lecture_materials[1])
-    im_controller.config_path = config_path
-    im_controller.serialize_to_config()
-    new_im_controller = InternalMaterialController(config_path)
-    assert new_im_controller.get_material_hashes() == [
-        path_and_lecture_material[1].hash
-        for path_and_lecture_material in paths_and_lecture_materials
-    ]

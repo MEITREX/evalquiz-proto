@@ -7,7 +7,7 @@ class MimetypeNotDetectedException(Exception):
 
 
 class MaterialAlreadyLoadedException(Exception):
-    """InternalLectureMaterial is already available."""
+    """InternalLectureMaterial is already available under the given hash. Unload the existing lecture material first to change its metadata. Delete the existing lecture material first to change its content and metadata."""
 
 
 class EmptyUploadException(ValueError):

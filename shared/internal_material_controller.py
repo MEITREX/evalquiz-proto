@@ -1,7 +1,7 @@
-from collections import defaultdict
-import jsonpickle
 import os
 from pathlib import Path
+
+from pymongo import MongoClient
 from evalquiz_proto.shared.exceptions import (
     DataChunkNotBytesException,
     FileHasDifferentHashException,
@@ -9,7 +9,7 @@ from evalquiz_proto.shared.exceptions import (
     LectureMaterialCastRequiredException,
 )
 from evalquiz_proto.shared.generated import LectureMaterial, MaterialUploadData
-from typing import AsyncIterator, ByteString, Optional
+from typing import Any, AsyncIterator, Optional
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 import betterproto
 
@@ -19,53 +19,23 @@ class InternalMaterialController:
     containing relevant lecture materials.
     """
 
-    def __init__(self, config_path: Optional[Path] = None) -> None:
+    def __init__(
+        self,
+        mongodb_client: MongoClient[dict[str, Any]] = MongoClient(
+            "evalquiz-material-server-db-1", 27017
+        ),
+        mongodb_database: str = "lecture_material_db",
+    ) -> None:
         """Constructor of InternalMaterialController.
 
         Args:
             config_path (Optional[Path], optional): Specifies where backups of the InternalMaterialController state are saved. Defaults to None.
         """
         self.config_path: Optional[Path] = None
-        self.internal_lecture_materials: defaultdict[
-            str, InternalLectureMaterial
-        ] = defaultdict()
-        if config_path is not None:
-            self.config_path = config_path
-            self.deserialize_from_config()
-
-    def deserialize_from_config(self) -> None:
-        """Serializes InternalMaterialController from config.
-        Loads all InternalLectureMaterials referenced in the config.
-        This method overwrites all existing state of InternalMaterialController.
-        """
-        if self.config_path is None:
-            raise ValueError(
-                "config_path is not set. Must be set for serialization or deserialization."
-            )
-        with open(self.config_path, "r") as local_file:
-            config = local_file.read()
-        internal_lecture_materials: defaultdict[
-            str, InternalLectureMaterial
-        ] = jsonpickle.decode(config)
-        for internal_lecture_material in internal_lecture_materials.values():
-            lecture_material = internal_lecture_material.cast_to_lecture_material()
-            print(type(lecture_material))
-            self.load_material(internal_lecture_material.local_path, lecture_material)
-
-    def serialize_to_config(self) -> None:
-        """Deserializes InternalMaterialController to config.
-        Saves all InternalLectureMaterials referenced in the config.
-        Contents of an existing config referenced by config_path are overwritten.
-        """
-        if self.config_path is None:
-            raise ValueError(
-                "config_path is not set. Must be set for serialization or deserialization."
-            )
-        serialized_internal_lecture_materials = jsonpickle.encode(
-            self.internal_lecture_materials
-        )
-        with open(self.config_path, "w") as local_file:
-            local_file.write(serialized_internal_lecture_materials)
+        self.mongodb_client = mongodb_client
+        self.internal_lecture_materials = mongodb_client[
+            mongodb_database
+        ].lecture_materials
 
     async def get_material_from_hash_async(
         self, hash: str, content_partition_size: int = 5 * 10**8
@@ -77,11 +47,18 @@ class InternalMaterialController:
             hash (str): Hash generated using the material
             content_partition_size (int, optional): Amount of bytes that are read from the file at one time. Defaults to 5*10**8.
 
+        Raises:
+            KeyError: Lecture material of given hash is locally not found.
+
         Returns:
             AsyncIterator[MaterialUploadData]: Yields MaterialUploadData, this can be metadata or binary data of the file itself.
         """
-        content_partition_size
-        internal_lecture_material = self.internal_lecture_materials[hash]
+        mongodb_document = self.internal_lecture_materials.find_one({"_id": hash})
+        if mongodb_document is None:
+            raise KeyError()
+        internal_lecture_material = InternalLectureMaterial.from_mongodb_document(
+            mongodb_document
+        )
         material_upload_data = MaterialUploadData(
             lecture_material=internal_lecture_material.cast_to_lecture_material()
         )
@@ -111,10 +88,12 @@ class InternalMaterialController:
             local_path, lecture_material
         )
         if internal_lecture_material.verify_hash(received_hash):
-            if internal_lecture_material.hash not in self.internal_lecture_materials:
-                self.internal_lecture_materials[
-                    internal_lecture_material.hash
-                ] = internal_lecture_material
+            mongodb_document = internal_lecture_material.to_mongodb_document()
+            self.internal_lecture_materials.update_one(
+                {"_id": mongodb_document["_id"]},
+                {"$set": mongodb_document},
+                upsert=True,
+            )
         else:
             raise FileHasDifferentHashException()
 
@@ -124,28 +103,7 @@ class InternalMaterialController:
         Args:
             hash: Hash generated using the material.
         """
-        del self.internal_lecture_materials[hash]
-
-    def add_material(
-        self,
-        local_path: Path,
-        lecture_material: LectureMaterial,
-        binary: ByteString,
-        overwrite: bool = True,
-    ) -> None:
-        """A new material is created at the specified location.
-
-        Args:
-            local_path: The system path to the location where the file is created.
-            lecture_material: Information about the lecture material.
-            binary: Binary data of the lecture material file itself.
-            overwrite: Boolean to describe if an existing file can be overwritten.
-        """
-        if os.path.exists(local_path) and not overwrite:
-            raise FileOverwriteNotPermittedException()
-        with open(local_path, "wb") as local_file:
-            local_file.write(binary)
-        self.load_material(local_path, lecture_material)
+        self.internal_lecture_materials.delete_one({"_id": hash})
 
     async def add_material_async(
         self,
@@ -195,10 +153,14 @@ class InternalMaterialController:
         Args:
             local_path: The system path to the file.
         """
-        internal_lecture_material = self.internal_lecture_materials[hash]
-        self.unload_material(hash)
-        if hash not in self.internal_lecture_materials.keys():
-            os.remove(internal_lecture_material.local_path)
+        mongodb_document = self.internal_lecture_materials.find_one({"_id": hash})
+        if mongodb_document is not None:
+            internal_lecture_material = InternalLectureMaterial.from_mongodb_document(
+                mongodb_document
+            )
+            self.unload_material(hash)
+            if self.internal_lecture_materials.find_one({"_id": hash}) is None:
+                os.remove(internal_lecture_material.local_path)
 
     def get_material_hashes(self) -> list[str]:
         """Retrieves all hashes of the internally referenced materials.
@@ -206,4 +168,4 @@ class InternalMaterialController:
         Returns:
             A set of strings
         """
-        return list(self.internal_lecture_materials.keys())
+        return [str(id) for id in self.internal_lecture_materials.distinct("_id")]
