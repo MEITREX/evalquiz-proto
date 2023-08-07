@@ -9,7 +9,7 @@ from evalquiz_proto.shared.exceptions import (
     LectureMaterialCastRequiredException,
 )
 from evalquiz_proto.shared.generated import LectureMaterial, MaterialUploadData
-from typing import Any, AsyncIterator, Optional
+from typing import Any, AsyncIterator
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 import betterproto
 
@@ -27,9 +27,9 @@ class InternalMaterialController:
         """Constructor of InternalMaterialController.
 
         Args:
-            config_path (Optional[Path], optional): Specifies where backups of the InternalMaterialController state are saved. Defaults to None.
+            mongodb_client (MongoClient[dict[str, Any]]): A pymongo client to enable communication with a MongoDB server.
+            mongodb_database: (str): The database that all operations are performed on.
         """
-        self.config_path: Optional[Path] = None
         self.mongodb_client = mongodb_client
         self.internal_lecture_materials = mongodb_client[
             mongodb_database
