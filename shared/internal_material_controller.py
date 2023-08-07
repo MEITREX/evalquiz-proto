@@ -21,9 +21,7 @@ class InternalMaterialController:
 
     def __init__(
         self,
-        mongodb_client: MongoClient[dict[str, Any]] = MongoClient(
-            "evalquiz-material-server-db-1", 27017
-        ),
+        mongodb_client: MongoClient[dict[str, Any]] = MongoClient("db", 27017),
         mongodb_database: str = "lecture_material_db",
     ) -> None:
         """Constructor of InternalMaterialController.
