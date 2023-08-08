@@ -203,13 +203,8 @@ enum ModuleStatus {
 	SUCCESS = 2;
 }
 
-enum PipelineModule {
-	CONFIG_DESERIALIZATION = 0;
-    MATERIAL_FILTER = 1;
-    QUESTION_GENERATION = 2;
-    QUESTION_SPECIFICATION_MERGE = 3;
-    QUESTION_EVALUATION = 4;
-    QUESTION_DROP = 5;
-    CONFIG_MERGE = 6;
-    CONFIG_SERIALIZATION = 7;
+message PipelineModule {
+	string name = 1;
+    string input_datatype = 2;
+    string output_datatype = 3;
 }

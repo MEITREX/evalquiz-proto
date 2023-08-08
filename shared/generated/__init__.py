@@ -54,17 +54,6 @@ class ModuleStatus(betterproto.Enum):
     SUCCESS = 2
 
 
-class PipelineModule(betterproto.Enum):
-    CONFIG_DESERIALIZATION = 0
-    MATERIAL_FILTER = 1
-    QUESTION_GENERATION = 2
-    QUESTION_SPECIFICATION_MERGE = 3
-    QUESTION_EVALUATION = 4
-    QUESTION_DROP = 5
-    CONFIG_MERGE = 6
-    CONFIG_SERIALIZATION = 7
-
-
 @dataclass(eq=False, repr=False)
 class Empty(betterproto.Message):
     pass
@@ -259,7 +248,14 @@ class BatchStatus(betterproto.Message):
     error_message: Optional[str] = betterproto.string_field(
         1, optional=True, group="_error_message"
     )
-    pipeline_module: "PipelineModule" = betterproto.enum_field(2)
+    pipeline_module: "PipelineModule" = betterproto.message_field(2)
+
+
+@dataclass(eq=False, repr=False)
+class PipelineModule(betterproto.Message):
+    name: str = betterproto.string_field(1)
+    input_datatype: str = betterproto.string_field(2)
+    output_datatype: str = betterproto.string_field(3)
 
 
 class PipelineServerStub(betterproto.ServiceStub):
