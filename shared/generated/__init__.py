@@ -49,9 +49,10 @@ class QuestionType(betterproto.Enum):
 
 
 class ModuleStatus(betterproto.Enum):
-    RUNNING = 0
-    FAILED = 1
-    SUCCESS = 2
+    IDLE = 0
+    RUNNING = 1
+    FAILED = 2
+    SUCCESS = 3
 
 
 @dataclass(eq=False, repr=False)
@@ -249,6 +250,7 @@ class BatchStatus(betterproto.Message):
         1, optional=True, group="_error_message"
     )
     pipeline_module: "PipelineModule" = betterproto.message_field(2)
+    module_status: "ModuleStatus" = betterproto.enum_field(3)
 
 
 @dataclass(eq=False, repr=False)

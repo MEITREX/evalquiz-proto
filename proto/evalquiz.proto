@@ -195,12 +195,14 @@ message PipelineStatus {
 message BatchStatus {
 	optional string error_message = 1;
     PipelineModule pipeline_module = 2;
+    ModuleStatus module_status = 3;
 }
 
 enum ModuleStatus {
-	RUNNING = 0;
-	FAILED = 1;
-	SUCCESS = 2;
+    IDLE = 0;
+	RUNNING = 1;
+	FAILED = 2;
+	SUCCESS = 3;
 }
 
 message PipelineModule {
