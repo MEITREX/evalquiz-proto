@@ -36,3 +36,11 @@ class NoMimetypeMappingException(Exception):
 
 class LectureMaterialCastRequiredException(Exception):
     """InternalLectureMaterial object should be casted to LectureMaterial to ensure correctness. This can be done with the InternalLectureMaterial method cast_to_lecture_material()."""
+
+
+class LectureMaterialNotFoundOnRemotesException(Exception):
+    """All remotes have been requested to provide the lecture material, but none of the remotes is able to."""
+
+
+class LectureMaterialLocallyNotFoundException(Exception):
+    """The requested lecture material cannot be provided by the InternalMaterialController."""

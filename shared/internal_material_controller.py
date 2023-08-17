@@ -7,6 +7,7 @@ from evalquiz_proto.shared.exceptions import (
     FileHasDifferentHashException,
     FileOverwriteNotPermittedException,
     LectureMaterialCastRequiredException,
+    LectureMaterialLocallyNotFoundException,
 )
 from evalquiz_proto.shared.generated import LectureMaterial, MaterialUploadData
 from typing import Any, AsyncIterator
@@ -17,6 +18,8 @@ import betterproto
 class InternalMaterialController:
     """The InternalMaterialController manages accesses to the local file system,
     containing relevant lecture materials.
+    The state of lecture materials that are available on the host is managed by MongoDB.
+    Multiple InternalMaterialControllers are able to share this state through MongoDB.
     """
 
     def __init__(
@@ -42,7 +45,7 @@ class InternalMaterialController:
         Arbitrary large files can be read, as only a partition of the file is read at a time.
 
         Args:
-            hash (str): Hash generated using the material
+            hash (str): Hash generated using the material.
             content_partition_size (int, optional): Amount of bytes that are read from the file at one time. Defaults to 5*10**8.
 
         Raises:
@@ -66,6 +69,26 @@ class InternalMaterialController:
                 print(content_partition)
                 material_upload_data = MaterialUploadData(data=content_partition)
                 yield material_upload_data
+
+    def get_material_path_from_hash(self, hash: str) -> Path:
+        """Returns the local path of the lecture material, if it is present in the internal pool of lecture materials.
+
+        Args:
+            hash (str): Hash generated using the material.
+
+        Raises:
+            LectureMaterialLocallyNotFoundException
+
+        Returns:
+            Path: A local path to the lecture material.
+        """
+        mongodb_document = self.internal_lecture_materials.find_one({"_id": hash})
+        if mongodb_document is None:
+            raise LectureMaterialLocallyNotFoundException()
+        internal_lecture_material = InternalLectureMaterial.from_mongodb_document(
+            mongodb_document
+        )
+        return internal_lecture_material.local_path
 
     def load_material(
         self, local_path: Path, lecture_material: LectureMaterial
