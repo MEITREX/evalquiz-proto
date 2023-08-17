@@ -72,10 +72,14 @@ class ListOfStrings(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class MaterialUploadData(betterproto.Message):
-    lecture_material: "LectureMaterial" = betterproto.message_field(
-        1, group="material_upload_data"
-    )
+    metadata: "Metadata" = betterproto.message_field(1, group="material_upload_data")
     data: bytes = betterproto.bytes_field(2, group="material_upload_data")
+
+
+@dataclass(eq=False, repr=False)
+class Metadata(betterproto.Message):
+    mimetype: str = betterproto.string_field(1)
+    hash: str = betterproto.string_field(2)
 
 
 @dataclass(eq=False, repr=False)

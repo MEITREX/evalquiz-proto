@@ -27,9 +27,14 @@ message ListOfStrings {
 
 message MaterialUploadData {
     oneof material_upload_data {
-        LectureMaterial lecture_material = 1;
+        Metadata metadata = 1;
         bytes data = 2;
     }
+}
+
+message Metadata {
+    string mimetype = 1;
+    string hash = 2;
 }
 
 /**
