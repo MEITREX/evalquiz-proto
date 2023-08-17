@@ -1,3 +1,4 @@
+from io import BufferedReader
 import mimetypes
 import os
 from pathlib import Path
@@ -29,6 +30,23 @@ class PathDictionaryController:
         """
         self.mongodb_client = mongodb_client
         self.local_paths = mongodb_client[mongodb_database].local_paths
+
+    def get_file_path_from_hash(self, hash: str) -> Path:
+        """Retrieves local path from hash.
+
+        Args:
+            hash (str): Hash to reference the file.
+
+        Raises:
+            KeyError: If file is not found under the given hash.
+
+        Returns:
+            Path: The path to the local file.
+        """
+        mongodb_document = self.local_paths.find_one({"_id": hash})
+        if mongodb_document is None:
+            raise KeyError()
+        return jsonpickle.decode(mongodb_document["local_path"])
 
     async def get_file_from_hash_async(
         self, hash: str, content_partition_size: int = 5 * 10**8
