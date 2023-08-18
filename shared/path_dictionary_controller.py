@@ -1,4 +1,3 @@
-from io import BufferedReader
 import mimetypes
 import os
 from pathlib import Path
