@@ -78,6 +78,7 @@ enum Relationship {
 
 message GenerationSettings {
     optional Mode mode = 1;
+    optional string model = 2;
 }
 
 message Mode {

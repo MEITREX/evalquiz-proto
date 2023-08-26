@@ -116,6 +116,7 @@ class Capability(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class GenerationSettings(betterproto.Message):
     mode: Optional["Mode"] = betterproto.message_field(1, optional=True, group="_mode")
+    model: Optional[str] = betterproto.string_field(2, optional=True, group="_model")
 
 
 @dataclass(eq=False, repr=False)
