@@ -42,9 +42,9 @@ class InternalLectureMaterial(LectureMaterial):
         Args:
             rename_file (bool, optional): Filename of referenced file is changed to the updated hash, if set to True. Defaults to False.
         """
-        with open(self.local_path, "r") as local_file:
+        with open(self.local_path, "rb") as local_file:
             file_content = local_file.read()
-        hash = blake3(file_content.encode("utf-8")).hexdigest()
+            hash = blake3(file_content).hexdigest()
         if hash != self.hash:
             self.hash = hash
             self._update_mimetype()
@@ -73,9 +73,9 @@ class InternalLectureMaterial(LectureMaterial):
         """
         if other_hash is None:
             other_hash = self.hash
-        with open(self.local_path, "r") as local_file:
+        with open(self.local_path, "rb") as local_file:
             file_content = local_file.read()
-            return other_hash == blake3(file_content.encode("utf-8")).hexdigest()
+            return other_hash == blake3(file_content).hexdigest()
 
     def cast_to_lecture_material(self) -> LectureMaterial:
         """Casts self object to object of superclass: LectureMaterial.
