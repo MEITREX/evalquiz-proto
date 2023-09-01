@@ -1,11 +1,12 @@
 from pathlib import Path
 import pytest
+from evalquiz_proto.shared.exceptions import MimetypeMismatchException
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 from evalquiz_proto.shared.generated import LectureMaterial
 
 
 @pytest.fixture(scope="session")
-def material() -> InternalLectureMaterial:
+def internal_lecture_material() -> InternalLectureMaterial:
     """Pytest fixture of InternalLectureMaterial.
 
     Returns:
@@ -19,26 +20,28 @@ def material() -> InternalLectureMaterial:
     return material
 
 
-def test_modification_and_verification(material: InternalLectureMaterial) -> None:
+def test_modification_and_verification(
+    internal_lecture_material: InternalLectureMaterial,
+) -> None:
     """Tests recognition of file modification using InternalLectureMaterial.verify_hash().
 
     Args:
-        material (InternalLectureMaterial): Pytest fixture of InternalLectureMaterial.
+        internal_lecture_material (InternalLectureMaterial): Pytest fixture of InternalLectureMaterial.
     """
-    hash = material.hash
+    hash = internal_lecture_material.hash
     path = Path(__file__).parent / "example_materials/modified_example.txt"
-    material.local_path = path
-    assert material.verify_hash() == False
-    material.update_hash()
-    assert material.hash != hash
+    internal_lecture_material.local_path = path
+    assert internal_lecture_material.verify_hash() == False
+    internal_lecture_material.update_hash()
+    assert internal_lecture_material.hash != hash
 
 
-def test_evaluate_mimetype(material: InternalLectureMaterial) -> None:
+def test_evaluate_mimetype(internal_lecture_material: InternalLectureMaterial) -> None:
     """Tests failure of mimetype evaluation using an invalid mimetype.
 
     Args:
-        material (InternalLectureMaterial): Pytest fixture of InternalLectureMaterial.y
+        internal_lecture_material (InternalLectureMaterial): Pytest fixture of InternalLectureMaterial.
     """
-    with pytest.raises(Exception):
-        material.file_type = "Not a valid mimetype"
-        material._evaluate_mimetype()
+    with pytest.raises(MimetypeMismatchException):
+        internal_lecture_material.file_type = "Not a valid mimetype"
+        internal_lecture_material._evaluate_mimetype()

@@ -8,7 +8,7 @@ from evalquiz_proto.shared.exceptions import (
     FileOverwriteNotPermittedException,
     MimetypeNotDetectedException,
 )
-from typing import Any, AsyncIterator, Tuple
+from typing import Any, AsyncIterator
 
 
 class PathDictionaryController:
@@ -49,7 +49,7 @@ class PathDictionaryController:
 
     async def get_file_from_hash_async(
         self, hash: str, content_partition_size: int = 5 * 10**8
-    ) -> Tuple[str, AsyncIterator[bytes]]:
+    ) -> tuple[str, AsyncIterator[bytes]]:
         """Streams a local file using the given hash and returns its mimetype.
 
         Args:
@@ -60,7 +60,7 @@ class PathDictionaryController:
             KeyError: If file is not found under the given hash.
 
         Returns:
-            Tuple[str, AsyncIterator[MaterialUploadData]]: A tuple with the mimetype at the first index and the asynchronous iterator for streaming at the second index.
+            tuple[str, AsyncIterator[MaterialUploadData]]: A tuple with the mimetype at the first index and the asynchronous iterator for streaming at the second index.
         """
         mongodb_document = self.local_paths.find_one({"_id": hash})
         if mongodb_document is None:
