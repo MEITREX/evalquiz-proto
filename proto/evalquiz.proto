@@ -107,8 +107,8 @@ message EvaluationSettings {
 
 message Question {
     QuestionType question_type = 1;
-    Result result = 2;
-    Evaluation evaluation = 3;
+    optional Result result = 2;
+    optional Evaluation evaluation = 3;
 }
 
 enum QuestionType {

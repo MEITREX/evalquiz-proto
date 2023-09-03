@@ -149,8 +149,12 @@ class EvaluationSettings(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class Question(betterproto.Message):
     question_type: "QuestionType" = betterproto.enum_field(1)
-    result: "Result" = betterproto.message_field(2)
-    evaluation: "Evaluation" = betterproto.message_field(3)
+    result: Optional["Result"] = betterproto.message_field(
+        2, optional=True, group="_result"
+    )
+    evaluation: Optional["Evaluation"] = betterproto.message_field(
+        3, optional=True, group="_evaluation"
+    )
 
 
 @dataclass(eq=False, repr=False)
