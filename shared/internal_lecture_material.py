@@ -115,6 +115,8 @@ class InternalLectureMaterial(LectureMaterial):
         """
         if local_path.suffix == ".md" or local_path.suffix == ".markdown":
             return "text/markdown"
+        if local_path.suffix == ".pptx":
+            return "application/vnd.openxmlformats-officedocument.presentationml.presentation"
         else:
             (type, _) = mimetypes.guess_type(local_path)
             return type
