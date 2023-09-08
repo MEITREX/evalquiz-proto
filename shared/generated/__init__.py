@@ -183,21 +183,22 @@ class MultipleResponse(betterproto.Message):
 class Metric(betterproto.Message):
     reference: str = betterproto.string_field(1)
     mode: Optional["Mode"] = betterproto.message_field(2, optional=True, group="_mode")
-    evaluation_type: "EvaluationType" = betterproto.message_field(3)
+    evaluation: "Evaluation" = betterproto.message_field(3)
 
 
 @dataclass(eq=False, repr=False)
-class EvaluationType(betterproto.Message):
+class Evaluation(betterproto.Message):
     language_model_evaluation: "LanguageModelEvaluation" = betterproto.message_field(
-        1, group="evaluation_type"
+        1, group="evaluation"
     )
 
 
 @dataclass(eq=False, repr=False)
 class LanguageModelEvaluation(betterproto.Message):
-    evaluation_question: str = betterproto.string_field(1)
-    examples: List["Question"] = betterproto.message_field(2)
-    result_type: "ResultType" = betterproto.message_field(3)
+    model: str = betterproto.string_field(1)
+    evaluation_question: str = betterproto.string_field(2)
+    examples: List["Question"] = betterproto.message_field(3)
+    result_type: "ResultType" = betterproto.message_field(4)
 
 
 @dataclass(eq=False, repr=False)

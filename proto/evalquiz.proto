@@ -140,19 +140,20 @@ message MultipleResponse {
 message Metric {
 	string reference = 1;
     optional Mode mode = 2;
-    EvaluationType evaluation_type = 3;
+    Evaluation evaluation = 3;
 }
 
-message EvaluationType {
-    oneof evaluation_type {
+message Evaluation {
+    oneof evaluation {
         LanguageModelEvaluation language_model_evaluation = 1;
     }
 }
 
 message LanguageModelEvaluation {
-	string evaluationQuestion = 1;
-    repeated Question examples = 2;
-    ResultType result_type = 3;
+    string model = 1;
+	string evaluationQuestion = 2;
+    repeated Question examples = 3;
+    ResultType result_type = 4;
 }
 
 message ResultType {
