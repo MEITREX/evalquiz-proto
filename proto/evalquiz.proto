@@ -110,7 +110,7 @@ message EvaluationSettings {
 message Question {
     QuestionType question_type = 1;
     optional Result result = 2;
-    optional Evaluation evaluation = 3;
+    map<string, string> evaluations = 3;
 }
 
 enum QuestionType {
@@ -135,11 +135,6 @@ message MultipleResponse {
 	string question_text = 1;
 	repeated string answer_texts = 2;
 	repeated string distractor_texts = 3;
-}
-
-message Evaluation {
-	string reference = 1;
-	string result = 2;
 }
 
 message Metric {

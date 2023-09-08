@@ -154,8 +154,8 @@ class Question(betterproto.Message):
     result: Optional["Result"] = betterproto.message_field(
         2, optional=True, group="_result"
     )
-    evaluation: Optional["Evaluation"] = betterproto.message_field(
-        3, optional=True, group="_evaluation"
+    evaluations: Dict[str, str] = betterproto.map_field(
+        3, betterproto.TYPE_STRING, betterproto.TYPE_STRING
     )
 
 
@@ -177,12 +177,6 @@ class MultipleResponse(betterproto.Message):
     question_text: str = betterproto.string_field(1)
     answer_texts: List[str] = betterproto.string_field(2)
     distractor_texts: List[str] = betterproto.string_field(3)
-
-
-@dataclass(eq=False, repr=False)
-class Evaluation(betterproto.Message):
-    reference: str = betterproto.string_field(1)
-    result: str = betterproto.string_field(2)
 
 
 @dataclass(eq=False, repr=False)
