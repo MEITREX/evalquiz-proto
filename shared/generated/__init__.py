@@ -138,7 +138,9 @@ class Overwrite(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class ByMetrics(betterproto.Message):
-    arithmetic_expression: str = betterproto.string_field(1)
+    evaluation_reference: str = betterproto.string_field(1)
+    evaluator_type: str = betterproto.string_field(2)
+    metric: str = betterproto.string_field(3)
 
 
 @dataclass(eq=False, repr=False)
@@ -180,7 +182,7 @@ class MultipleResponse(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class Evaluation(betterproto.Message):
     reference: str = betterproto.string_field(1)
-    result: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(2)
+    result: str = betterproto.string_field(2)
 
 
 @dataclass(eq=False, repr=False)

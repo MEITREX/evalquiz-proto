@@ -98,7 +98,9 @@ message Overwrite {
 }
 
 message ByMetrics {
-	string arithmeticExpression = 1;
+	string evaluation_reference = 1;
+    string evaluator_type = 2;
+    string metric = 3;
 }
 
 message EvaluationSettings {
@@ -137,7 +139,7 @@ message MultipleResponse {
 
 message Evaluation {
 	string reference = 1;
-	google.protobuf.Any result = 2;
+	string result = 2;
 }
 
 message Metric {
