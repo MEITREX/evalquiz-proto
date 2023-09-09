@@ -100,7 +100,7 @@ message Overwrite {
 message ByMetrics {
 	string evaluation_reference = 1;
     string evaluator_type = 2;
-    string metric = 3;
+    EvaluationResult evaluation_result = 3;
 }
 
 message EvaluationSettings {
@@ -109,8 +109,8 @@ message EvaluationSettings {
 
 message Question {
     QuestionType question_type = 1;
-    optional Result result = 2;
-    map<string, string> evaluations = 3;
+    optional GenerationResult generation_result = 2;
+    map<string, EvaluationResult> evaluation_results = 3;
 }
 
 enum QuestionType {
@@ -118,8 +118,8 @@ enum QuestionType {
 	MULTIPLE_RESPONSE = 1;
 }
 
-message Result {
-    oneof result {
+message GenerationResult {
+    oneof generation_result {
         MultipleChoice multiple_choice = 1;
         MultipleResponse multiple_response = 2;
     }
@@ -151,21 +151,28 @@ message Evaluation {
 
 message LanguageModelEvaluation {
     string model = 1;
-	string evaluationQuestion = 2;
+	string evaluation_question = 2;
     repeated Question examples = 3;
-    ResultType result_type = 4;
+    EvaluationResultType evaluation_result_type = 4;
 }
 
-message ResultType {
-    oneof result_type {
+message EvaluationResultType {
+    oneof evaluation_result_type {
         ValueRange value_range = 1;
         Categorical categorical = 2;
     }
 }
 
+message EvaluationResult {
+    oneof evaluation_result {
+        string str_value = 1;
+        int32 int_value = 2;
+    }
+}
+
 message ValueRange {
-	float lowerBound = 1;
-	float upperBound = 2;
+	float lower_bound = 1;
+	float upper_bound = 2;
 }
 
 message Categorical {
@@ -187,8 +194,8 @@ message LectureMaterial {
 }
 
 message PageFilter {
-	int32 lowerBound = 1; 
-	int32 upperBound = 2;
+	int32 lower_bound = 1; 
+	int32 upper_bound = 2;
 }
 
 message PipelineStatus {

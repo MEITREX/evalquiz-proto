@@ -140,7 +140,7 @@ class Overwrite(betterproto.Message):
 class ByMetrics(betterproto.Message):
     evaluation_reference: str = betterproto.string_field(1)
     evaluator_type: str = betterproto.string_field(2)
-    metric: str = betterproto.string_field(3)
+    evaluation_result: "EvaluationResult" = betterproto.message_field(3)
 
 
 @dataclass(eq=False, repr=False)
@@ -151,18 +151,22 @@ class EvaluationSettings(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class Question(betterproto.Message):
     question_type: "QuestionType" = betterproto.enum_field(1)
-    result: Optional["Result"] = betterproto.message_field(
-        2, optional=True, group="_result"
+    generation_result: Optional["GenerationResult"] = betterproto.message_field(
+        2, optional=True, group="_generation_result"
     )
-    evaluations: Dict[str, str] = betterproto.map_field(
-        3, betterproto.TYPE_STRING, betterproto.TYPE_STRING
+    evaluation_results: Dict[str, "EvaluationResult"] = betterproto.map_field(
+        3, betterproto.TYPE_STRING, betterproto.TYPE_MESSAGE
     )
 
 
 @dataclass(eq=False, repr=False)
-class Result(betterproto.Message):
-    multiple_choice: "MultipleChoice" = betterproto.message_field(1, group="result")
-    multiple_response: "MultipleResponse" = betterproto.message_field(2, group="result")
+class GenerationResult(betterproto.Message):
+    multiple_choice: "MultipleChoice" = betterproto.message_field(
+        1, group="generation_result"
+    )
+    multiple_response: "MultipleResponse" = betterproto.message_field(
+        2, group="generation_result"
+    )
 
 
 @dataclass(eq=False, repr=False)
@@ -198,13 +202,23 @@ class LanguageModelEvaluation(betterproto.Message):
     model: str = betterproto.string_field(1)
     evaluation_question: str = betterproto.string_field(2)
     examples: List["Question"] = betterproto.message_field(3)
-    result_type: "ResultType" = betterproto.message_field(4)
+    evaluation_result_type: "EvaluationResultType" = betterproto.message_field(4)
 
 
 @dataclass(eq=False, repr=False)
-class ResultType(betterproto.Message):
-    value_range: "ValueRange" = betterproto.message_field(1, group="result_type")
-    categorical: "Categorical" = betterproto.message_field(2, group="result_type")
+class EvaluationResultType(betterproto.Message):
+    value_range: "ValueRange" = betterproto.message_field(
+        1, group="evaluation_result_type"
+    )
+    categorical: "Categorical" = betterproto.message_field(
+        2, group="evaluation_result_type"
+    )
+
+
+@dataclass(eq=False, repr=False)
+class EvaluationResult(betterproto.Message):
+    str_value: str = betterproto.string_field(1, group="evaluation_result")
+    int_value: int = betterproto.int32_field(2, group="evaluation_result")
 
 
 @dataclass(eq=False, repr=False)
