@@ -151,8 +151,8 @@ message Evaluation {
 
 message LanguageModelEvaluation {
     string model = 1;
-	string evaluation_question = 2;
-    repeated Question examples = 3;
+	string evaluation_description = 2;
+    repeated GenerationEvaluationResult few_shot_examples = 3;
     EvaluationResultType evaluation_result_type = 4;
 }
 
@@ -166,8 +166,13 @@ message EvaluationResultType {
 message EvaluationResult {
     oneof evaluation_result {
         string str_value = 1;
-        int32 int_value = 2;
+        float float_value = 2;
     }
+}
+
+message GenerationEvaluationResult {
+    GenerationResult generation_result = 1;
+    EvaluationResult evaluation_result = 2;
 }
 
 message ValueRange {

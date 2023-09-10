@@ -200,8 +200,8 @@ class Evaluation(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class LanguageModelEvaluation(betterproto.Message):
     model: str = betterproto.string_field(1)
-    evaluation_question: str = betterproto.string_field(2)
-    examples: List["Question"] = betterproto.message_field(3)
+    evaluation_description: str = betterproto.string_field(2)
+    few_shot_examples: List["GenerationEvaluationResult"] = betterproto.message_field(3)
     evaluation_result_type: "EvaluationResultType" = betterproto.message_field(4)
 
 
@@ -218,7 +218,13 @@ class EvaluationResultType(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class EvaluationResult(betterproto.Message):
     str_value: str = betterproto.string_field(1, group="evaluation_result")
-    int_value: int = betterproto.int32_field(2, group="evaluation_result")
+    float_value: float = betterproto.float_field(2, group="evaluation_result")
+
+
+@dataclass(eq=False, repr=False)
+class GenerationEvaluationResult(betterproto.Message):
+    generation_result: "GenerationResult" = betterproto.message_field(1)
+    evaluation_result: "EvaluationResult" = betterproto.message_field(2)
 
 
 @dataclass(eq=False, repr=False)
