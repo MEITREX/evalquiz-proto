@@ -12,6 +12,7 @@ from evalquiz_proto.shared.exceptions import (
     MimetypeMismatchException,
     MimetypeNotDetectedException,
 )
+from evalquiz_proto.shared.mimetype_resolver import MimetypeResolver
 
 
 @dataclass(init=False)
@@ -95,31 +96,11 @@ class InternalLectureMaterial(LectureMaterial):
             MimetypeNotDetectedException
             MimetypeMismatchException
         """
-        type = self._markdown_fixed_guess_type(self.local_path)
+        type = MimetypeResolver.fixed_guess_type(self.local_path.suffix)
         if type is None:
             raise MimetypeNotDetectedException()
         if type != self.file_type:
             raise MimetypeMismatchException()
-
-    def _markdown_fixed_guess_type(self, local_path: Path) -> Optional[str]:
-        """Fixes the missing markdown type in Python's mimetypes library.
-
-        Args:
-            local_path (Path): Path to guess type for.
-
-        Returns:
-            str: The guessed mime type.
-
-        Raises:
-            MimetypeNotDetectedException
-        """
-        if local_path.suffix == ".md" or local_path.suffix == ".markdown":
-            return "text/markdown"
-        if local_path.suffix == ".pptx":
-            return "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-        else:
-            (type, _) = mimetypes.guess_type(local_path)
-            return type
 
     def _update_mimetype(self) -> None:
         """Updates mimetype to match the mimetype of file at local_path."""
