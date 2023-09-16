@@ -189,3 +189,20 @@ class PathDictionaryController:
             A set of strings
         """
         return [str(id) for id in self.local_paths.distinct("_id")]
+
+    def get_material_name(self, hash: str) -> str:
+        """Returns material name from hash.
+
+        Args:
+            hash (str): Hash to reference the file.
+
+        Raises:
+            KeyError: If file is not found under the given hash
+
+        Returns:
+            str: Material name.
+        """
+        mongodb_document = self.local_paths.find_one({"_id": hash})
+        if mongodb_document is None:
+            raise KeyError()
+        return jsonpickle.decode(mongodb_document["name"])

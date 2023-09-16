@@ -361,6 +361,23 @@ class MaterialServerStub(betterproto.ServiceStub):
             metadata=metadata,
         )
 
+    async def get_material_name(
+        self,
+        string: "String",
+        *,
+        timeout: Optional[float] = None,
+        deadline: Optional["Deadline"] = None,
+        metadata: Optional["MetadataLike"] = None
+    ) -> "String":
+        return await self._unary_unary(
+            "/MaterialServer/GetMaterialName",
+            string,
+            String,
+            timeout=timeout,
+            deadline=deadline,
+            metadata=metadata,
+        )
+
     async def get_material(
         self,
         string: "String",
@@ -420,6 +437,9 @@ class MaterialServerBase(ServiceBase):
     async def get_material_hashes(self, empty: "Empty") -> "ListOfStrings":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
+    async def get_material_name(self, string: "String") -> "String":
+        raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
+
     async def get_material(
         self, string: "String"
     ) -> AsyncIterator["MaterialUploadData"]:
@@ -445,6 +465,13 @@ class MaterialServerBase(ServiceBase):
     ) -> None:
         request = await stream.recv_message()
         response = await self.get_material_hashes(request)
+        await stream.send_message(response)
+
+    async def __rpc_get_material_name(
+        self, stream: "grpclib.server.Stream[String, String]"
+    ) -> None:
+        request = await stream.recv_message()
+        response = await self.get_material_name(request)
         await stream.send_message(response)
 
     async def __rpc_get_material(
@@ -476,6 +503,12 @@ class MaterialServerBase(ServiceBase):
                 grpclib.const.Cardinality.UNARY_UNARY,
                 Empty,
                 ListOfStrings,
+            ),
+            "/MaterialServer/GetMaterialName": grpclib.const.Handler(
+                self.__rpc_get_material_name,
+                grpclib.const.Cardinality.UNARY_UNARY,
+                String,
+                String,
             ),
             "/MaterialServer/GetMaterial": grpclib.const.Handler(
                 self.__rpc_get_material,

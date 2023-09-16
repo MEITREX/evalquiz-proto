@@ -10,6 +10,7 @@ service MaterialServer {
     rpc UploadMaterial (stream MaterialUploadData) returns (Empty) {}
 	rpc DeleteMaterial (String) returns (Empty) {}
 	rpc GetMaterialHashes (Empty) returns (ListOfStrings) {}
+    rpc GetMaterialName (String) returns (String) {}
 	rpc GetMaterial (String) returns (stream MaterialUploadData) {}
 }
 
