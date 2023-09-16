@@ -205,4 +205,4 @@ class PathDictionaryController:
         mongodb_document = self.local_paths.find_one({"_id": hash})
         if mongodb_document is None:
             raise KeyError()
-        return jsonpickle.decode(mongodb_document["name"])
+        return mongodb_document["name"]
