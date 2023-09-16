@@ -1,6 +1,7 @@
 import mimetypes
 import os
 from pathlib import Path
+import shutil
 import jsonpickle
 
 from pymongo import MongoClient
@@ -90,14 +91,19 @@ class PathDictionaryController:
             while content_partition := local_file.read(content_partition_size):
                 yield content_partition
 
-    def load_file(self, local_path: Path, hash: str) -> None:
+    def load_file(self, local_path: Path, hash: str, name: str = "") -> None:
         """Adds a file to the internal pool of files.
 
         Args:
             local_path (Path): The system path to the file.
             hash (str): Hash to reference the file.
+            name: Name or description of the file to load.
         """
-        mongodb_document = {"_id": hash, "local_path": jsonpickle.encode(local_path)}
+        mongodb_document = {
+            "_id": hash,
+            "name": name,
+            "local_path": jsonpickle.encode(local_path),
+        }
         self.local_paths.update_one(
             {"_id": mongodb_document["_id"]},
             {"$set": mongodb_document},
@@ -118,6 +124,7 @@ class PathDictionaryController:
         hash: str,
         binary_iterator: AsyncIterator[bytes],
         overwrite: bool = True,
+        name: str = "",
     ) -> None:
         """A new file is created asynchronously at the specified location from a stream.
         System operations are carried out async to allow large file sizes and reduce the memory footprint.
@@ -127,6 +134,7 @@ class PathDictionaryController:
             hash: Hash to reference the file.
             binary_iterator: Yields binary data of the file itself.
             overwrite: Boolean to describe if an existing file can be overwritten.
+            name: Name or description of the file to add.
 
         Raises:
             FileOverwriteNotPermittedException
@@ -141,7 +149,24 @@ class PathDictionaryController:
                     local_file.write(data)
                 except StopAsyncIteration:
                     break
-        self.load_file(local_path, hash)
+        self.load_file(local_path, hash, name)
+
+    def copy_and_load_file(
+        self,
+        source_local_path: Path,
+        destination_local_path: Path,
+        hash: str,
+        name: str = "",
+    ) -> None:
+        """Copies file to destination and loads the destination file with `self.load_file(...)`.
+
+        Args:
+            source_local_path (Path): Source file local path.
+            destination_local_path (Path): Destination file local path.
+            hash (str): Hash to reference the file.
+        """
+        shutil.copyfile(source_local_path, destination_local_path)
+        self.load_file(destination_local_path, hash, name)
 
     def delete_file(self, hash: str) -> None:
         """Deletes the reference to the file and the file itself from the filesystem.

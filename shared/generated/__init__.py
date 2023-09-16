@@ -79,7 +79,7 @@ class MaterialUploadData(betterproto.Message):
 @dataclass(eq=False, repr=False)
 class Metadata(betterproto.Message):
     mimetype: str = betterproto.string_field(1)
-    hash: str = betterproto.string_field(2)
+    name: str = betterproto.string_field(3)
 
 
 @dataclass(eq=False, repr=False)

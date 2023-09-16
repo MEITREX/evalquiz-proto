@@ -34,7 +34,7 @@ message MaterialUploadData {
 
 message Metadata {
     string mimetype = 1;
-    string hash = 2;
+    string name = 3;
 }
 
 /**
