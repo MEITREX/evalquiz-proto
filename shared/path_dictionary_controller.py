@@ -11,6 +11,8 @@ from evalquiz_proto.shared.exceptions import (
 )
 from typing import Any, AsyncIterator
 
+from evalquiz_proto.shared.mimetype_resolver import MimetypeResolver
+
 
 class PathDictionaryController:
     """The PathDictionaryController manages str aliases to paths for local files.
@@ -67,7 +69,7 @@ class PathDictionaryController:
         if mongodb_document is None:
             raise KeyError()
         local_path = jsonpickle.decode(mongodb_document["local_path"])
-        (mimetype, _) = mimetypes.guess_type(local_path)
+        mimetype = MimetypeResolver.fixed_guess_type(local_path)
         if mimetype is None:
             raise MimetypeNotDetectedException()
         material_upload_data_iterator = self._get_async_iterator_of_local_file(
