@@ -16,7 +16,6 @@ from typing import (
 )
 
 import betterproto
-import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
 import grpclib
 from betterproto.grpc.grpclib_server import ServiceBase
 
@@ -264,10 +263,17 @@ class PageFilter(betterproto.Message):
 
 @dataclass(eq=False, repr=False)
 class PipelineStatus(betterproto.Message):
-    result: Optional["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(
+    result: Optional["PipelineResult"] = betterproto.message_field(
         1, optional=True, group="_result"
     )
     batch_status: List["BatchStatus"] = betterproto.message_field(2)
+
+
+@dataclass(eq=False, repr=False)
+class PipelineResult(betterproto.Message):
+    internal_config: "InternalConfig" = betterproto.message_field(
+        1, group="pipeline_result"
+    )
 
 
 @dataclass(eq=False, repr=False)
