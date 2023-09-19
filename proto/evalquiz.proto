@@ -205,8 +205,14 @@ message PageFilter {
 }
 
 message PipelineStatus {
-    optional google.protobuf.Any result = 1;
+    optional PipelineResult result = 1;
     repeated BatchStatus batch_status = 2;
+}
+
+message PipelineResult {
+    oneof pipeline_result {
+        InternalConfig internal_config = 1;
+    }
 }
 
 message BatchStatus {
