@@ -69,7 +69,7 @@ class PathDictionaryController:
         if mongodb_document is None:
             raise KeyError()
         local_path = jsonpickle.decode(mongodb_document["local_path"])
-        mimetype = MimetypeResolver.fixed_guess_type(local_path)
+        mimetype = MimetypeResolver.fixed_guess_type(local_path.suffix)
         if mimetype is None:
             raise MimetypeNotDetectedException()
         material_upload_data_iterator = self._get_async_iterator_of_local_file(
