@@ -34,7 +34,7 @@ class InternalLectureMaterial(LectureMaterial):
         self.hash = lecture_material.hash
         self.file_type = lecture_material.file_type
         self.page_filter = lecture_material.page_filter
-        self._evaluate_mimetype()
+        self.update_mimetype()
         self.update_hash()
 
     def update_hash(self, rename_file: bool = False) -> None:
@@ -89,18 +89,18 @@ class InternalLectureMaterial(LectureMaterial):
             self.reference, self.url, self.hash, self.file_type, self.page_filter
         )
 
-    def _evaluate_mimetype(self) -> None:
-        """Evaluates if given mimetype matches the mimetype of file at local_path.
+    def update_mimetype(self) -> None:
+        """Evaluates if given mimetype matches mimetype of file at local_path.
+        Sets mimetype to new value, if mimetype does not match mimetype of file at local_path.
 
         Raises:
             MimetypeNotDetectedException
-            MimetypeMismatchException
         """
         type = MimetypeResolver.fixed_guess_type(self.local_path.suffix)
         if type is None:
             raise MimetypeNotDetectedException()
         if type != self.file_type:
-            raise MimetypeMismatchException()
+            self.file_type = type
 
     def _update_mimetype(self) -> None:
         """Updates mimetype to match the mimetype of file at local_path."""
