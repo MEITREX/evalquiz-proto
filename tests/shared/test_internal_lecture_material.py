@@ -1,6 +1,5 @@
 from pathlib import Path
 import pytest
-from evalquiz_proto.shared.exceptions import MimetypeMismatchException
 from evalquiz_proto.shared.internal_lecture_material import InternalLectureMaterial
 from evalquiz_proto.shared.generated import LectureMaterial
 
@@ -34,14 +33,3 @@ def test_modification_and_verification(
     assert internal_lecture_material.verify_hash() == False
     internal_lecture_material.update_hash()
     assert internal_lecture_material.hash != hash
-
-
-def test_evaluate_mimetype(internal_lecture_material: InternalLectureMaterial) -> None:
-    """Tests failure of mimetype evaluation using an invalid mimetype.
-
-    Args:
-        internal_lecture_material (InternalLectureMaterial): Pytest fixture of InternalLectureMaterial.
-    """
-    with pytest.raises(MimetypeMismatchException):
-        internal_lecture_material.file_type = "Not a valid mimetype"
-        internal_lecture_material._evaluate_mimetype()

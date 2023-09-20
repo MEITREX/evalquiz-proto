@@ -1,4 +1,3 @@
-import mimetypes
 import os
 from pathlib import Path
 import shutil
@@ -21,7 +20,7 @@ class PathDictionaryController:
 
     def __init__(
         self,
-        mongodb_client: MongoClient[dict[str, Any]] = MongoClient("db", 27017),
+        mongodb_client: MongoClient[dict[str, Any]],
         mongodb_database: str = "local_path_db",
     ) -> None:
         """Constructor of InternalMaterialController.

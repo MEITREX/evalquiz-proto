@@ -9,7 +9,6 @@ import jsonpickle
 from evalquiz_proto.shared.generated import LectureMaterial
 from blake3 import blake3
 from evalquiz_proto.shared.exceptions import (
-    MimetypeMismatchException,
     MimetypeNotDetectedException,
 )
 from evalquiz_proto.shared.mimetype_resolver import MimetypeResolver
