@@ -103,7 +103,7 @@ class InternalLectureMaterial(LectureMaterial):
 
     def _update_mimetype(self) -> None:
         """Updates mimetype to match the mimetype of file at local_path."""
-        (type, _) = mimetypes.guess_type(self.local_path)
+        type = MimetypeResolver.fixed_guess_type(self.local_path.suffix)
         if type is not None:
             self.file_type = type
 
