@@ -38,7 +38,7 @@ class MimetypeResolver:
         """
         if mimetype == "text/markdown":
             return ".md"
-        if mimetype == ".pptx":
-            return "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        if mimetype == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+            return ".pptx"
         else:
             return mimetypes.guess_extension(mimetype, strict=False)
